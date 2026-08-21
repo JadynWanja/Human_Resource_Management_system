@@ -1,38 +1,158 @@
 import React from 'react';
-import { Shield, Key, Database, Server, Settings, Users } from 'lucide-react';
+import {
+  Bell,
+  Building2,
+  CalendarCheck,
+  ClipboardList,
+  LayoutDashboard,
+  Search,
+  Settings,
+  UserRoundCheck,
+  UsersRound,
+} from 'lucide-react';
+import '../styles/hrms.css';
+
+const navItems = [
+  { label: 'Dashboard', icon: LayoutDashboard, active: true },
+  { label: 'Employees', icon: UsersRound },
+  { label: 'Departments', icon: Building2 },
+  { label: 'Leave Management', icon: ClipboardList },
+  { label: 'Attendance', icon: CalendarCheck },
+  { label: 'Reports', icon: UserRoundCheck },
+  { label: 'Notifications', icon: Bell },
+  { label: 'Settings', icon: Settings },
+];
+
+const metrics = [
+  { label: 'Total Employees', value: '245', color: 'primary', icon: UsersRound },
+  { label: 'Departments', value: '12', color: 'violet', icon: Building2 },
+  { label: 'On Leave', value: '18', color: 'warning', icon: ClipboardList },
+  { label: 'Present Today', value: '227', color: 'success', icon: CalendarCheck },
+];
+
+const bars = [
+  { day: 'Mon', height: '48%' },
+  { day: 'Tue', height: '74%' },
+  { day: 'Wed', height: '98%' },
+  { day: 'Thu', height: '48%' },
+  { day: 'Fri', height: '74%' },
+  { day: 'Sat', height: '98%' },
+  { day: 'Sun', height: '48%' },
+];
+
+const leaveRequests = [
+  { name: 'John Doe', type: 'Annual Leave', status: 'Pending' },
+  { name: 'Jane Smith', type: 'Sick Leave', status: 'Approved' },
+  { name: 'Michael Brown', type: 'Casual Leave', status: 'Rejected' },
+  { name: 'Sarah Johnson', type: 'Annual Leave', status: 'Pending' },
+];
 
 export default function AdminDashboard() {
   return (
-    <div style={{ padding: '2.5rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
+    <main className='admin-layout' data-node-id='2:42'>
+      <aside className='hrms-sidebar' aria-label='Admin navigation'>
         <div>
-          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1e2029' }}>01 — System Admin Portal</h2>
-          <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.2rem' }}>Module assigned to Louis • System Governance & Access Controls</p>
-        </div>
-        <span style={{ background: '#e0e7ff', color: '#4338ca', padding: '0.35rem 0.75rem', borderRadius: '20px', fontWeight: 700, fontSize: '0.8rem' }}>
-          Admin Role Authorized
-        </span>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem', marginBottom: '2rem' }}>
-        <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <Shield size={24} style={{ color: '#5e49e2', marginBottom: '0.5rem' }} />
-          <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>User Roles & IAM</h4>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>14 Active Admin Accounts, SSO Enforced</p>
+          <p className='hrms-sidebar-logo'>HRMS</p>
+          <p className='hrms-sidebar-subtitle'>Human Resource Management</p>
         </div>
 
-        <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <Database size={24} style={{ color: '#10b981', marginBottom: '0.5rem' }} />
-          <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>DB Connections</h4>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>PostgreSQL Pool Status: Healthy (99.9% Uptime)</p>
-        </div>
+        <nav className='hrms-sidebar-nav'>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.label}
+                type='button'
+                className={item.active ? 'hrms-nav-item active' : 'hrms-nav-item'}
+              >
+                <Icon size={17} aria-hidden='true' />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
 
-        <div style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-          <Server size={24} style={{ color: '#f59e0b', marginBottom: '0.5rem' }} />
-          <h4 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Audit Logs</h4>
-          <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem' }}>Real-time Security Event Stream Active</p>
+        <div className='hrms-sidebar-user'>
+          <strong>Admin</strong>
+          <span>Logged in user</span>
         </div>
-      </div>
-    </div>
+      </aside>
+
+      <section className='dashboard-content'>
+        <header className='hrms-dashboard-header'>
+          <div>
+            <h1>02 - Admin Dashboard</h1>
+            <p>Here is your organization overview for today.</p>
+          </div>
+          <label className='search-box'>
+            <Search size={17} aria-hidden='true' />
+            <input type='search' placeholder='Search anything...' />
+          </label>
+        </header>
+
+        <section className='hrms-metric-grid' aria-label='Admin metrics'>
+          {metrics.map((metric) => {
+            const Icon = metric.icon;
+            return (
+              <article className='hrms-metric-card' key={metric.label}>
+                <div>
+                  <p>{metric.label}</p>
+                  <strong>{metric.value}</strong>
+                </div>
+                <span className={'hrms-metric-icon ' + metric.color}>
+                  <Icon size={16} aria-hidden='true' />
+                </span>
+              </article>
+            );
+          })}
+        </section>
+
+        <section className='hrms-dashboard-grid'>
+          <article className='hrms-panel chart-panel'>
+            <h2>Headcount Overview</h2>
+            <div className='bar-chart' aria-label='Weekly headcount chart'>
+              {bars.map((bar) => (
+                <div className='bar-column' key={bar.day}>
+                  <span className='hrms-bar' style={{ height: bar.height }} />
+                  <span>{bar.day}</span>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className='hrms-panel leave-panel'>
+            <h2>Leave Summary</h2>
+            <div className='leave-row strong'>
+              <span>Annual Leave</span>
+              <strong>50%</strong>
+            </div>
+            <div className='leave-row'>
+              <span>Sick Leave</span>
+              <strong>20%</strong>
+            </div>
+            <div className='leave-row'>
+              <span>Casual Leave</span>
+              <strong>20%</strong>
+            </div>
+          </article>
+        </section>
+
+        <section className='hrms-panel requests-panel'>
+          <h2>Recent Leave Requests</h2>
+          <div className='request-list'>
+            {leaveRequests.map((request) => (
+              <div className='hrms-request-row' key={request.name + request.type}>
+                <span>
+                  {request.name} - {request.type} - {request.status}
+                </span>
+                <strong className={'hrms-status ' + request.status.toLowerCase()}>
+                  {request.status}
+                </strong>
+              </div>
+            ))}
+          </div>
+        </section>
+      </section>
+    </main>
   );
 }
