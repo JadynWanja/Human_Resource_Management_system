@@ -1,0 +1,2 @@
+# Human Resource Management System
+This is a Human Resource Management System (HRMS) project that aims to streamline and automate various HR processes within an organization. The system provides functionalities for managing employee information, attendance, leave requests, payroll, and performance evaluations.
