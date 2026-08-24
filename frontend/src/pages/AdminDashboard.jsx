@@ -1,158 +1,288 @@
 import React from 'react';
 import {
+  ArrowUpRight,
   Bell,
-  Building2,
-  CalendarCheck,
-  ClipboardList,
-  LayoutDashboard,
+  BriefcaseBusiness,
+  CalendarDays,
+  CheckCheck,
+  ChevronRight,
+  CircleDollarSign,
+  Clock3,
+  FileText,
   Search,
-  Settings,
-  UserRoundCheck,
-  UsersRound,
+  ShieldCheck,
+  TrendingUp,
+  Users,
 } from 'lucide-react';
-import '../styles/hrms.css';
 
-const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, active: true },
-  { label: 'Employees', icon: UsersRound },
-  { label: 'Departments', icon: Building2 },
-  { label: 'Leave Management', icon: ClipboardList },
-  { label: 'Attendance', icon: CalendarCheck },
-  { label: 'Reports', icon: UserRoundCheck },
-  { label: 'Notifications', icon: Bell },
-  { label: 'Settings', icon: Settings },
+const stats = [
+  { label: 'Total employees', value: '2,480', change: '+8.2%', tone: 'indigo' },
+  { label: 'Open roles', value: '34', change: '+12 open', tone: 'green' },
+  { label: 'Monthly payroll', value: '$482K', change: '+4.3%', tone: 'orange' },
+  { label: 'Attendance rate', value: '94.8%', change: '+1.6%', tone: 'blue' },
 ];
 
-const metrics = [
-  { label: 'Total Employees', value: '245', color: 'primary', icon: UsersRound },
-  { label: 'Departments', value: '12', color: 'violet', icon: Building2 },
-  { label: 'On Leave', value: '18', color: 'warning', icon: ClipboardList },
-  { label: 'Present Today', value: '227', color: 'success', icon: CalendarCheck },
+const performanceBars = [62, 84, 54, 90, 76, 96, 88];
+
+const approvals = [
+  { name: 'Anika Morris', team: 'Design', action: 'Leave request', status: 'Pending' },
+  { name: 'Daniel Cruz', team: 'Operations', action: 'Expense claim', status: 'Approved' },
+  { name: 'Priya Shah', team: 'Engineering', action: 'Recruitment', status: 'Review' },
 ];
 
-const bars = [
-  { day: 'Mon', height: '48%' },
-  { day: 'Tue', height: '74%' },
-  { day: 'Wed', height: '98%' },
-  { day: 'Thu', height: '48%' },
-  { day: 'Fri', height: '74%' },
-  { day: 'Sat', height: '98%' },
-  { day: 'Sun', height: '48%' },
+const teamMembers = [
+  { name: 'Milo Turner', role: 'Head of People', initial: 'MT' },
+  { name: 'Keisha Reed', role: 'HR Business Partner', initial: 'KR' },
+  { name: 'Lucas Moore', role: 'Finance Lead', initial: 'LM' },
+  { name: 'Noah Patel', role: 'Talent Specialist', initial: 'NP' },
 ];
 
-const leaveRequests = [
-  { name: 'John Doe', type: 'Annual Leave', status: 'Pending' },
-  { name: 'Jane Smith', type: 'Sick Leave', status: 'Approved' },
-  { name: 'Michael Brown', type: 'Casual Leave', status: 'Rejected' },
-  { name: 'Sarah Johnson', type: 'Annual Leave', status: 'Pending' },
+const schedule = [
+  { day: 'Mon', title: 'Leadership sync', time: '9:00 AM' },
+  { day: 'Tue', title: 'Recruitment review', time: '11:30 AM' },
+  { day: 'Wed', title: 'Benefits brief', time: '2:00 PM' },
+  { day: 'Thu', title: 'Payroll audit', time: '4:15 PM' },
 ];
 
 export default function AdminDashboard() {
   return (
-    <main className='admin-layout' data-node-id='2:42'>
-      <aside className='hrms-sidebar' aria-label='Admin navigation'>
-        <div>
-          <p className='hrms-sidebar-logo'>HRMS</p>
-          <p className='hrms-sidebar-subtitle'>Human Resource Management</p>
+    <div className="dashboard-layout">
+      <aside className="dashboard-sidebar">
+        <div className="brand-lockup">
+          <div className="brand-icon">H</div>
+          <div>
+            <strong>HarborOne</strong>
+            <span>HRMS</span>
+          </div>
         </div>
 
-        <nav className='hrms-sidebar-nav'>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
+        <nav className="side-nav" aria-label="Dashboard navigation">
+          {['Overview', 'Employees', 'Payroll', 'Attendance', 'Recruitment', 'Reports', 'Settings'].map(
+            (item, index) => (
               <button
-                key={item.label}
-                type='button'
-                className={item.active ? 'hrms-nav-item active' : 'hrms-nav-item'}
+                key={item}
+                type="button"
+                className={index === 0 ? 'nav-item active' : 'nav-item'}
               >
-                <Icon size={17} aria-hidden='true' />
-                <span>{item.label}</span>
+                <span>{item}</span>
+                {index < 2 && <ChevronRight size={16} aria-hidden="true" />}
               </button>
-            );
-          })}
+            )
+          )}
         </nav>
 
-        <div className='hrms-sidebar-user'>
-          <strong>Admin</strong>
-          <span>Logged in user</span>
+        <div className="sidebar-card">
+          <div className="pill-row">
+            <ShieldCheck size={16} />
+            <span>Compliance</span>
+          </div>
+          <strong>98.4% policy coverage</strong>
+          <p>Policies and training modules are up to date across all departments.</p>
         </div>
       </aside>
 
-      <section className='dashboard-content'>
-        <header className='hrms-dashboard-header'>
+      <main className="dashboard-main">
+        <header className="topbar">
           <div>
-            <h1>02 - Admin Dashboard</h1>
-            <p>Here is your organization overview for today.</p>
+            <p className="section-kicker">Welcome back</p>
+            <h1>Admin dashboard</h1>
           </div>
-          <label className='search-box'>
-            <Search size={17} aria-hidden='true' />
-            <input type='search' placeholder='Search anything...' />
-          </label>
+
+          <div className="topbar-actions">
+            <label className="search-box" aria-label="Search employees">
+              <Search size={16} aria-hidden="true" />
+              <input type="search" placeholder="Search employees" />
+            </label>
+
+            <button type="button" className="icon-button icon-soft" aria-label="Notifications">
+              <Bell size={18} />
+            </button>
+
+            <div className="profile-pill">
+              <div className="profile-avatar">AL</div>
+              <div>
+                <strong>Alex Lee</strong>
+                <span>Administrator</span>
+              </div>
+            </div>
+          </div>
         </header>
 
-        <section className='hrms-metric-grid' aria-label='Admin metrics'>
-          {metrics.map((metric) => {
-            const Icon = metric.icon;
-            return (
-              <article className='hrms-metric-card' key={metric.label}>
-                <div>
-                  <p>{metric.label}</p>
-                  <strong>{metric.value}</strong>
+        <section className="stats-grid" aria-label="HR metrics overview">
+          {stats.map((stat) => (
+            <article className={`stat-card ${stat.tone}`} key={stat.label}>
+              <div className="stat-topline">
+                <span>{stat.label}</span>
+                <div className="stat-icon">
+                  {stat.tone === 'indigo' && <Users size={18} />}
+                  {stat.tone === 'green' && <BriefcaseBusiness size={18} />}
+                  {stat.tone === 'orange' && <CircleDollarSign size={18} />}
+                  {stat.tone === 'blue' && <TrendingUp size={18} />}
                 </div>
-                <span className={'hrms-metric-icon ' + metric.color}>
-                  <Icon size={16} aria-hidden='true' />
-                </span>
-              </article>
-            );
-          })}
+              </div>
+              <strong>{stat.value}</strong>
+              <div className="stat-trend">
+                <ArrowUpRight size={16} />
+                <span>{stat.change}</span>
+              </div>
+            </article>
+          ))}
         </section>
 
-        <section className='hrms-dashboard-grid'>
-          <article className='hrms-panel chart-panel'>
-            <h2>Headcount Overview</h2>
-            <div className='bar-chart' aria-label='Weekly headcount chart'>
-              {bars.map((bar) => (
-                <div className='bar-column' key={bar.day}>
-                  <span className='hrms-bar' style={{ height: bar.height }} />
-                  <span>{bar.day}</span>
+        <section className="panel-grid">
+          <article className="panel panel-main">
+            <div className="panel-header">
+              <div>
+                <p className="mini-label">Performance</p>
+                <h2>Team productivity</h2>
+              </div>
+              <span className="live-pill">Live</span>
+            </div>
+
+            <div className="chart-wrap" aria-label="Team productivity chart">
+              <div className="chart-scale">
+                <span>100%</span>
+                <span>75%</span>
+                <span>50%</span>
+                <span>25%</span>
+              </div>
+
+              <div className="bar-chart">
+                {performanceBars.map((bar, index) => (
+                  <div className="bar-container" key={index}>
+                    <div className="bar-track">
+                      <span className="bar-fill" style={{ height: `${bar}%` }} />
+                    </div>
+                    <small>{['M', 'T', 'W', 'T', 'F', 'S', 'S'][index]}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </article>
+
+          <article className="panel">
+            <div className="panel-header compact">
+              <div>
+                <p className="mini-label">Compliance</p>
+                <h2>Checklist</h2>
+              </div>
+            </div>
+
+            <ul className="check-list">
+              {[
+                'Safety training completions',
+                'Payroll verification review',
+                'Policy acknowledgment sent',
+                'Annual benefits enrollment',
+              ].map((item, index) => (
+                <li key={item} className={index < 3 ? 'done' : ''}>
+                  <CheckCheck size={16} />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        </section>
+
+        <section className="lower-grid">
+          <article className="panel">
+            <div className="panel-header compact">
+              <div>
+                <p className="mini-label">People</p>
+                <h2>Key team members</h2>
+              </div>
+            </div>
+
+            <div className="member-list">
+              {teamMembers.map((member) => (
+                <div className="member-item" key={member.name}>
+                  <div className="member-avatar">{member.initial}</div>
+                  <div className="member-copy">
+                    <strong>{member.name}</strong>
+                    <span>{member.role}</span>
+                  </div>
                 </div>
               ))}
             </div>
           </article>
 
-          <article className='hrms-panel leave-panel'>
-            <h2>Leave Summary</h2>
-            <div className='leave-row strong'>
-              <span>Annual Leave</span>
-              <strong>50%</strong>
+          <article className="panel">
+            <div className="panel-header compact">
+              <div>
+                <p className="mini-label">Approvals</p>
+                <h2>Pending actions</h2>
+              </div>
             </div>
-            <div className='leave-row'>
-              <span>Sick Leave</span>
-              <strong>20%</strong>
+
+            <div className="approval-list">
+              {approvals.map((item) => (
+                <div className="approval-item" key={`${item.name}-${item.action}`}>
+                  <div className="approval-copy">
+                    <strong>{item.name}</strong>
+                    <span>{item.team}</span>
+                    <small>{item.action}</small>
+                  </div>
+                  <span className={`status-badge ${item.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {item.status}
+                  </span>
+                </div>
+              ))}
             </div>
-            <div className='leave-row'>
-              <span>Casual Leave</span>
-              <strong>20%</strong>
+          </article>
+
+          <article className="panel">
+            <div className="panel-header compact">
+              <div>
+                <p className="mini-label">Agenda</p>
+                <h2>Upcoming events</h2>
+              </div>
+            </div>
+
+            <div className="schedule-list">
+              {schedule.map((item) => (
+                <div className="schedule-item" key={`${item.day}-${item.title}`}>
+                  <div className="day-badge">{item.day}</div>
+                  <div className="event-copy">
+                    <strong>{item.title}</strong>
+                    <span>{item.time}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </article>
         </section>
 
-        <section className='hrms-panel requests-panel'>
-          <h2>Recent Leave Requests</h2>
-          <div className='request-list'>
-            {leaveRequests.map((request) => (
-              <div className='hrms-request-row' key={request.name + request.type}>
-                <span>
-                  {request.name} - {request.type} - {request.status}
-                </span>
-                <strong className={'hrms-status ' + request.status.toLowerCase()}>
-                  {request.status}
-                </strong>
-              </div>
-            ))}
+        <section className="bottom-strip">
+          <div className="strip-card highlight">
+            <div>
+              <p className="mini-label">This month</p>
+              <h3>Hiring pipeline</h3>
+            </div>
+            <div className="strip-value">18 interviews</div>
+          </div>
+          <div className="strip-card">
+            <Clock3 size={18} />
+            <div>
+              <p className="mini-label">Avg. response time</p>
+              <h3>2.4 days</h3>
+            </div>
+          </div>
+          <div className="strip-card">
+            <FileText size={18} />
+            <div>
+              <p className="mini-label">Documents</p>
+              <h3>214 files</h3>
+            </div>
+          </div>
+          <div className="strip-card">
+            <CalendarDays size={18} />
+            <div>
+              <p className="mini-label">Next review</p>
+              <h3>Friday, 3:00 PM</h3>
+            </div>
           </div>
         </section>
-      </section>
-    </main>
+      </main>
+    </div>
   );
 }
