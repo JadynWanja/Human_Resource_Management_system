@@ -1,14 +1,16 @@
 /* ==========================================================================
-   HRMS Manager Dashboard — Roy's Feature Branch Styling
+   HRMS Manager Dashboard — Pixel-Perfect Light Theme (Figma Match)
    ========================================================================== */
 
 :root {
+  /* Color Palette matching Figma 03 — Manager Dashboard */
   --bg-app: #f4f6fb;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
 
   --primary-purple: #5e49e2;
   --primary-purple-hover: #4d3ac7;
+  --primary-purple-light: rgba(94, 73, 226, 0.1);
 
   --text-title: #1e2029;
   --text-body: #4a4d5a;
@@ -17,10 +19,12 @@
 
   --border-color: #eaedf5;
 
+  /* Status Colors */
   --status-pending: #f59e0b;
   --status-approved: #10b981;
   --status-rejected: #ef4444;
 
+  /* Fonts & Radius */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --radius-card: 14px;
   --radius-btn: 10px;
@@ -50,6 +54,7 @@ html, body {
   background-color: var(--bg-app);
 }
 
+/* Sidebar Styles */
 .sidebar {
   width: 240px;
   background-color: var(--bg-sidebar);
@@ -63,6 +68,10 @@ html, body {
   flex-shrink: 0;
 }
 
+.sidebar-logo {
+  margin-bottom: 2rem;
+}
+
 .sidebar-logo h1 {
   font-size: 1.65rem;
   font-weight: 800;
@@ -74,7 +83,6 @@ html, body {
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-top: 2px;
-  margin-bottom: 2rem;
 }
 
 .nav-list {
@@ -83,6 +91,10 @@ html, body {
   gap: 0.35rem;
   list-style: none;
   flex: 1;
+}
+
+.nav-item {
+  width: 100%;
 }
 
 .nav-link {
@@ -98,6 +110,12 @@ html, body {
   font-weight: 600;
   cursor: pointer;
   text-align: left;
+  transition: all 0.15s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(94, 73, 226, 0.05);
+  color: var(--primary-purple);
 }
 
 .nav-link.active {
@@ -112,6 +130,18 @@ html, body {
   border-top: 1px solid var(--border-color);
 }
 
+.sidebar-footer .user-role {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-title);
+}
+
+.sidebar-footer .user-status {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Main Content Area */
 .main-wrapper {
   flex: 1;
   padding: 2rem 2.5rem;
@@ -131,6 +161,7 @@ html, body {
   font-size: 1.6rem;
   font-weight: 800;
   color: var(--text-title);
+  letter-spacing: -0.02em;
 }
 
 .dashboard-header p {
@@ -148,8 +179,18 @@ html, body {
   font-size: 0.85rem;
   color: var(--text-title);
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
+.search-input-box:focus {
+  border-color: var(--primary-purple);
+}
+
+.search-input-box::placeholder {
+  color: var(--text-light);
+}
+
+/* Figma Metric Cards Grid */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -186,6 +227,7 @@ html, body {
   border-radius: 8px;
 }
 
+/* Middle Section Layout (Headcount + Leave Summary) */
 .middle-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -207,6 +249,7 @@ html, body {
   margin-bottom: 1.25rem;
 }
 
+/* Headcount Chart Bar Visualizer */
 .chart-days {
   display: flex;
   gap: 1.75rem;
@@ -228,8 +271,10 @@ html, body {
   width: 22px;
   background-color: var(--primary-purple);
   border-radius: 6px;
+  transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Leave Summary List */
 .leave-summary-list {
   display: flex;
   flex-direction: column;
@@ -263,6 +308,7 @@ html, body {
   color: var(--text-title);
 }
 
+/* Bottom Pending Leave Requests List */
 .requests-list {
   display: flex;
   flex-direction: column;
@@ -279,6 +325,25 @@ html, body {
   padding: 0.25rem 0;
 }
 
-.status-pending { color: var(--status-pending); font-weight: 700; }
-.status-approved { color: var(--status-approved); font-weight: 700; }
-.status-rejected { color: var(--status-rejected); font-weight: 700; }
+.request-text {
+  font-weight: 500;
+}
+
+.status-badge-text {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.status-pending { color: var(--status-pending); }
+.status-approved { color: var(--status-approved); }
+.status-rejected { color: var(--status-rejected); }
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .middle-grid {
+    grid-template-columns: 1fr;
+  }
+}
