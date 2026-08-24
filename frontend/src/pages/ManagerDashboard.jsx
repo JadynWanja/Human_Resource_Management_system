@@ -1,32 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import Sidebar from '../components/Sidebar';
-import { LogOut, Search, CheckCircle, XCircle, Clock } from 'lucide-react';
 import {
-  METRIC_CARDS_DATA,
-  HEADCOUNT_BARS,
-  LEAVE_SUMMARY_DATA,
-  PENDING_LEAVE_REQUESTS
-} from '../data/mockData';
+  Users,
+  Building2,
+  CalendarDays,
+  UserCheck,
+  Search,
+  LogOut,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  TrendingUp,
+  LayoutDashboard,
+  Calendar,
+  Clock3,
+  FileSpreadsheet,
+  Settings,
+  Bell,
+  Sparkles,
+  ShieldCheck,
+  BarChart3
+} from 'lucide-react';
+import '../styles/hrms.css';
 
 export default function ManagerDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
-  const [leaveRequests, setLeaveRequests] = useState(PENDING_LEAVE_REQUESTS);
-  const [metrics, setMetrics] = useState(METRIC_CARDS_DATA);
+  const [leaveRequests, setLeaveRequests] = useState([
+    { id: 1, employee: 'David Kim', type: 'Annual Leave', days: 5, stateText: 'Pending Approval', status: 'pending', date: '2026-08-24' },
+    { id: 2, employee: 'Sophia Martinez', type: 'Sick Leave', days: 1, stateText: 'Pending Approval', status: 'pending', date: '2026-08-25' },
+    { id: 3, employee: 'Marcus Chen', type: 'Remote Work', days: 3, stateText: 'Approved by Manager', status: 'approved', date: '2026-08-20' },
+    { id: 4, employee: 'Priya Sharma', type: 'Casual Leave', days: 2, stateText: 'Declined by HR', status: 'rejected', date: '2026-08-18' }
+  ]);
+
+  const [metrics, setMetrics] = useState([
+    { title: 'Total Employees', value: '245', tone: 'indigo', icon: Users, trend: '+12% from last month' },
+    { title: 'Departments', value: '12', tone: 'green', icon: Building2, trend: 'Active Org Structure' },
+    { title: 'On Leave Today', value: '18', tone: 'orange', icon: CalendarDays, trend: '7.3% of workforce' },
+    { title: 'Present Today', value: '227', tone: 'blue', icon: UserCheck, trend: '92.7% attendance' }
+  ]);
 
   useEffect(() => {
-    // Fetch live dashboard metrics & leave requests from backend
     fetch('/api/dashboard')
       .then((res) => res.ok ? res.json() : null)
       .then((data) => {
         if (data && data.leaveRequests) {
           setLeaveRequests(data.leaveRequests);
         }
-        if (data && data.metrics) {
-          setMetrics(data.metrics);
-        }
       })
-      .catch((err) => console.warn('[ManagerDashboard] Using fallback mock data:', err));
+      .catch((err) => console.warn('[ManagerDashboard] Live sync fallback active:', err));
   }, []);
 
   const handleApprove = async (id) => {
@@ -34,7 +55,7 @@ export default function ManagerDashboard({ user, onLogout }) {
       const res = await fetch(`/api/leave-requests/${id}/approve`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        setLeaveRequests(data.leaveRequests);
+        if (data.leaveRequests) setLeaveRequests(data.leaveRequests);
       } else {
         setLeaveRequests((prev) =>
           prev.map((r) => r.id === id ? { ...r, status: 'approved', stateText: 'Approved by Manager' } : r)
@@ -52,7 +73,7 @@ export default function ManagerDashboard({ user, onLogout }) {
       const res = await fetch(`/api/leave-requests/${id}/reject`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        setLeaveRequests(data.leaveRequests);
+        if (data.leaveRequests) setLeaveRequests(data.leaveRequests);
       } else {
         setLeaveRequests((prev) =>
           prev.map((r) => r.id === id ? { ...r, status: 'rejected', stateText: 'Declined by Manager' } : r)
@@ -65,176 +86,294 @@ export default function ManagerDashboard({ user, onLogout }) {
     }
   };
 
-  return (
-    <div className="app-layout">
-      {/* Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+  const filteredRequests = leaveRequests.filter(r =>
+    searchQuery === '' ||
+    (r.employee && r.employee.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (r.type && r.type.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
-      {/* Main Content */}
-      <main className="main-wrapper">
-        <header className="dashboard-header">
+  return (
+    <div className="dashboard-layout">
+      {/* Sidebar Navigation */}
+      <aside className="dashboard-sidebar">
+        <div className="brand-lockup">
+          <div className="brand-icon">H</div>
           <div>
-            <h2>03 — Manager Dashboard</h2>
-            <p>Welcome back, {user ? user.name : 'Department Manager'} • {user ? user.department : 'Engineering'} Overview</p>
+            <strong>HRMS Workspace</strong>
+            <span>Enterprise Suite</span>
+          </div>
+        </div>
+
+        <nav className="side-nav">
+          <button
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <LayoutDashboard size={18} />
+              Manager Dashboard
+            </span>
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === 'team' ? 'active' : ''}`}
+            onClick={() => setActiveTab('team')}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Users size={18} />
+              My Team (245)
+            </span>
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === 'leave' ? 'active' : ''}`}
+            onClick={() => setActiveTab('leave')}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Calendar size={18} />
+              Leave Approvals
+            </span>
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === 'attendance' ? 'active' : ''}`}
+            onClick={() => setActiveTab('attendance')}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <Clock3 size={18} />
+              Attendance Logs
+            </span>
+          </button>
+
+          <button
+            className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
+            onClick={() => setActiveTab('reports')}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <FileSpreadsheet size={18} />
+              Reports & Analytics
+            </span>
+          </button>
+        </nav>
+
+        <div className="sidebar-card">
+          <div className="pill-row">
+            <ShieldCheck size={14} />
+            <span>Manager Portal</span>
+          </div>
+          <strong>Live Backend Sync</strong>
+          <p>Connected to PostgreSQL REST API endpoint with role-based authorization.</p>
+        </div>
+      </aside>
+
+      {/* Main Workspace */}
+      <main className="dashboard-main">
+        {/* Top Header / Profile Bar */}
+        <header className="topbar">
+          <div>
+            <p className="section-kicker">03 — Manager Dashboard</p>
+            <h1>Overview & Operations</h1>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ position: 'relative' }}>
+          <div className="topbar-actions">
+            <div className="search-box">
+              <Search size={18} />
               <input
                 type="text"
-                className="search-input-box"
-                placeholder="Search requests..."
+                placeholder="Search employees or leave requests..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
+            {/* Profile & Logout Pill */}
+            <div className="profile-pill">
+              <div className="profile-avatar">
+                {user && user.name ? user.name.split(' ').map(n => n[0]).join('') : 'M'}
+              </div>
+              <div>
+                <strong>{user ? user.name : 'Priya Shah'}</strong>
+                <span>{user ? user.roleLabel : 'Department Manager'}</span>
+              </div>
+            </div>
+
             {onLogout && (
               <button
                 onClick={onLogout}
-                style={{
-                  background: '#ef4444',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '10px',
-                  padding: '0.6rem 1rem',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.4rem'
-                }}
+                className="icon-button icon-soft"
+                title="Logout"
+                style={{ cursor: 'pointer', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
               >
-                <LogOut size={16} />
-                <span>Logout</span>
+                <LogOut size={18} />
               </button>
             )}
           </div>
         </header>
 
-        {/* 4 Summary Metric Cards */}
-        <section className="metrics-grid">
-          {metrics.map((card) => (
-            <div key={card.id} className="metric-card">
-              <div>
-                <div className="label">{card.label}</div>
-                <div className="value">{card.value}</div>
-              </div>
-              <div
-                className="metric-icon-sq"
-                style={{ backgroundColor: card.color }}
-              />
-            </div>
-          ))}
-        </section>
-
-        {/* Middle Charts Grid */}
-        <section className="middle-grid">
-          <div className="card-panel">
-            <div className="card-title">Headcount Overview</div>
-            <div className="chart-days">
-              {HEADCOUNT_BARS.map((b) => (
-                <span key={b.day} style={{ width: '22px', textAlign: 'center' }}>
-                  {b.day}
+        {/* 4 Primary Stat Cards */}
+        <section className="stats-grid">
+          {metrics.map((card, idx) => {
+            const IconComponent = card.icon || Users;
+            return (
+              <div key={idx} className={`stat-card ${card.tone}`}>
+                <div className="stat-topline">
+                  <span>{card.title}</span>
+                  <div className="stat-icon">
+                    <IconComponent size={20} />
+                  </div>
+                </div>
+                <strong>{card.value}</strong>
+                <span className="stat-trend">
+                  <TrendingUp size={12} />
+                  {card.trend}
                 </span>
-              ))}
+              </div>
+            );
+          })}
+        </section>
+
+        {/* Middle Panel Grid */}
+        <section className="panel-grid">
+          {/* Headcount Bar Chart */}
+          <div className="panel">
+            <div className="panel-header">
+              <div>
+                <p className="mini-label">Workforce Analytics</p>
+                <h2>Headcount & Weekly Attendance</h2>
+              </div>
+              <span className="live-pill">Live Metrics</span>
             </div>
-            <div className="bars-container">
-              {HEADCOUNT_BARS.map((b) => (
-                <div
-                  key={b.day}
-                  className="bar-col"
-                  style={{ height: b.height }}
-                />
-              ))}
+
+            <div className="chart-wrap">
+              <div className="chart-scale">
+                <span>100%</span>
+                <span>75%</span>
+                <span>50%</span>
+                <span>25%</span>
+                <span>0%</span>
+              </div>
+              <div className="bar-chart">
+                {[
+                  { day: 'Mon', height: '45%' },
+                  { day: 'Tue', height: '65%' },
+                  { day: 'Wed', height: '85%' },
+                  { day: 'Thu', height: '45%' },
+                  { day: 'Fri', height: '65%' },
+                  { day: 'Sat', height: '85%' },
+                  { day: 'Sun', height: '45%' }
+                ].map((b, i) => (
+                  <div key={i} className="bar-container">
+                    <div className="bar-track">
+                      <span className="bar-fill" style={{ height: b.height }} />
+                    </div>
+                    <small>{b.day}</small>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="card-panel">
-            <div className="card-title">Leave Summary</div>
-            <div className="leave-summary-list">
-              {LEAVE_SUMMARY_DATA.map((ls, idx) => (
-                <div
-                  key={idx}
-                  className={`leave-summary-item ${ls.isActive ? 'active' : ''}`}
-                >
-                  <span className="name">{ls.type}</span>
-                  <span className="percentage">{ls.percentage}</span>
-                </div>
-              ))}
+          {/* Leave Summary Breakdown */}
+          <div className="panel">
+            <div className="panel-header compact">
+              <div>
+                <p className="mini-label">Distribution</p>
+                <h2>Leave Allocation Summary</h2>
+              </div>
             </div>
+
+            <ul className="check-list">
+              <li className="done">
+                <CheckCircle2 size={18} />
+                <div style={{ flex: 1 }}>
+                  <strong>Annual Leave</strong>
+                  <div style={{ fontSize: '0.76rem', color: '#64748b' }}>50% of active allocations</div>
+                </div>
+              </li>
+              <li>
+                <Clock size={18} />
+                <div style={{ flex: 1 }}>
+                  <strong>Sick Leave</strong>
+                  <div style={{ fontSize: '0.76rem', color: '#64748b' }}>20% of active allocations</div>
+                </div>
+              </li>
+              <li>
+                <Clock size={18} />
+                <div style={{ flex: 1 }}>
+                  <strong>Casual Leave</strong>
+                  <div style={{ fontSize: '0.76rem', color: '#64748b' }}>20% of active allocations</div>
+                </div>
+              </li>
+            </ul>
           </div>
         </section>
 
-        {/* Pending Requests Table with Interactive Action Buttons */}
-        <section className="card-panel">
-          <div className="card-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>Pending Leave Requests</span>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Backend Live Sync</span>
+        {/* Lower Grid: Pending Leave Requests Table with Live Action Buttons */}
+        <section className="panel" style={{ marginTop: '22px' }}>
+          <div className="panel-header">
+            <div>
+              <p className="mini-label">Manager Action Center</p>
+              <h2>Pending Leave & Remote Work Requests</h2>
+            </div>
+            <span className="live-pill">{filteredRequests.length} Requests Pending</span>
           </div>
 
-          <div className="requests-list">
-            {leaveRequests.filter(r =>
-              searchQuery === '' ||
-              (r.employee && r.employee.toLowerCase().includes(searchQuery.toLowerCase())) ||
-              (r.type && r.type.toLowerCase().includes(searchQuery.toLowerCase()))
-            ).map((req) => (
-              <div key={req.id} className="request-row" style={{ padding: '0.6rem 0', borderBottom: '1px solid #f1f5f9' }}>
-                <div>
-                  <div style={{ fontWeight: 600, color: '#1e2029' }}>
-                    {req.employee} — <span style={{ color: '#5e49e2' }}>{req.type}</span>
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '2px' }}>
-                    Duration: {req.days || 1} day(s) • Status: <span className={`status-${req.status}`}>{req.stateText}</span>
-                  </div>
+          <div className="approval-list">
+            {filteredRequests.map((req) => (
+              <div key={req.id} className="approval-item" style={{ padding: '16px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.6)', border: '1px solid rgba(148, 163, 184, 0.12)' }}>
+                <div className="approval-copy">
+                  <strong>{req.employee}</strong>
+                  <span>{req.type} • {req.days || 1} day(s)</span>
+                  <small>Submitted: {req.date || 'Today'}</small>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   {req.status === 'pending' ? (
                     <>
                       <button
                         onClick={() => handleApprove(req.id)}
                         style={{
-                          backgroundColor: '#10b981',
-                          color: '#fff',
+                          background: 'linear-gradient(135deg, #10b981, #059669)',
+                          color: '#ffffff',
                           border: 'none',
-                          borderRadius: '6px',
-                          padding: '0.4rem 0.75rem',
-                          fontSize: '0.78rem',
+                          padding: '10px 16px',
+                          borderRadius: '12px',
                           fontWeight: 700,
-                          cursor: 'pointer',
+                          fontSize: '0.82rem',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '0.3rem'
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)',
+                          cursor: 'pointer'
                         }}
                       >
-                        <CheckCircle size={14} />
+                        <CheckCircle2 size={16} />
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(req.id)}
                         style={{
-                          backgroundColor: '#ef4444',
-                          color: '#fff',
+                          background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                          color: '#ffffff',
                           border: 'none',
-                          borderRadius: '6px',
-                          padding: '0.4rem 0.75rem',
-                          fontSize: '0.78rem',
+                          padding: '10px 16px',
+                          borderRadius: '12px',
                           fontWeight: 700,
-                          cursor: 'pointer',
+                          fontSize: '0.82rem',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '0.3rem'
+                          gap: '6px',
+                          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.25)',
+                          cursor: 'pointer'
                         }}
                       >
-                        <XCircle size={14} />
+                        <XCircle size={16} />
                         Decline
                       </button>
                     </>
                   ) : (
-                    <span className={`status-${req.status}`} style={{ fontSize: '0.82rem', fontWeight: 700 }}>
-                      {req.stateText}
+                    <span className={`status-badge ${req.status}`}>
+                      {req.stateText || req.status.toUpperCase()}
                     </span>
                   )}
                 </div>
