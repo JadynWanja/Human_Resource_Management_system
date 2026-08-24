@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ArrowUpRight,
   Bell,
@@ -15,36 +15,78 @@ import {
   Users,
 } from 'lucide-react';
 
-const stats = [
-  { label: 'Total employees', value: '2,480', change: '+8.2%', tone: 'indigo' },
-  { label: 'Open roles', value: '34', change: '+12 open', tone: 'green' },
-  { label: 'Monthly payroll', value: '$482K', change: '+4.3%', tone: 'orange' },
-  { label: 'Attendance rate', value: '94.8%', change: '+1.6%', tone: 'blue' },
-];
+const fallbackData = {
+  overview: {
+    totalEmployees: 2480,
+    openRoles: 34,
+    payrollThisMonth: 482000,
+    attendanceRate: 94.8,
+  },
+  modules: [
+    { title: 'Employees', detail: '2,480 active staff', tone: 'indigo' },
+    { title: 'Payroll', detail: '$482K this month', tone: 'green' },
+    { title: 'Attendance', detail: '94.8% on-time', tone: 'blue' },
+    { title: 'Reports', detail: '28 generated this week', tone: 'orange' },
+    { title: 'Settings', detail: 'Policies and access', tone: 'purple' },
+    { title: 'Performance', detail: 'Team engagement tracking', tone: 'teal' },
+  ],
+  approvals: [
+    { name: 'Anika Morris', team: 'Design', action: 'Leave request', status: 'Pending' },
+    { name: 'Daniel Cruz', team: 'Operations', action: 'Expense claim', status: 'Approved' },
+    { name: 'Priya Shah', team: 'Engineering', action: 'Recruitment', status: 'Review' },
+  ],
+  teamMembers: [
+    { name: 'Milo Turner', role: 'Head of People', initial: 'MT' },
+    { name: 'Keisha Reed', role: 'HR Business Partner', initial: 'KR' },
+    { name: 'Lucas Moore', role: 'Finance Lead', initial: 'LM' },
+    { name: 'Noah Patel', role: 'Talent Specialist', initial: 'NP' },
+  ],
+  schedule: [
+    { day: 'Mon', title: 'Leadership sync', time: '9:00 AM' },
+    { day: 'Tue', title: 'Recruitment review', time: '11:30 AM' },
+    { day: 'Wed', title: 'Benefits brief', time: '2:00 PM' },
+    { day: 'Thu', title: 'Payroll audit', time: '4:15 PM' },
+  ],
+};
 
 const performanceBars = [62, 84, 54, 90, 76, 96, 88];
 
-const approvals = [
-  { name: 'Anika Morris', team: 'Design', action: 'Leave request', status: 'Pending' },
-  { name: 'Daniel Cruz', team: 'Operations', action: 'Expense claim', status: 'Approved' },
-  { name: 'Priya Shah', team: 'Engineering', action: 'Recruitment', status: 'Review' },
-];
+export default function AdminDashboard({ user, onLogout }) {
+  const [dashboardData, setDashboardData] = useState(fallbackData);
 
-const teamMembers = [
-  { name: 'Milo Turner', role: 'Head of People', initial: 'MT' },
-  { name: 'Keisha Reed', role: 'HR Business Partner', initial: 'KR' },
-  { name: 'Lucas Moore', role: 'Finance Lead', initial: 'LM' },
-  { name: 'Noah Patel', role: 'Talent Specialist', initial: 'NP' },
-];
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Dashboard API unavailable');
+        }
+        return response.json();
+      })
+      .then((data) => setDashboardData(data))
+      .catch(() => setDashboardData(fallbackData));
+  }, []);
 
-const schedule = [
-  { day: 'Mon', title: 'Leadership sync', time: '9:00 AM' },
-  { day: 'Tue', title: 'Recruitment review', time: '11:30 AM' },
-  { day: 'Wed', title: 'Benefits brief', time: '2:00 PM' },
-  { day: 'Thu', title: 'Payroll audit', time: '4:15 PM' },
-];
+  const currentUser = user || { name: 'Alex Lee', email: 'alex.lee@harborone.com', roleLabel: 'Administrator' };
+  const initials = currentUser.name
+    .split(' ')
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 
-export default function AdminDashboard() {
+  const payrollDisplay = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(dashboardData.overview.payrollThisMonth || 482000);
+
+  const stats = [
+    { label: 'Total employees', value: (dashboardData.overview.totalEmployees || 2480).toLocaleString(), change: '+8.2%', tone: 'indigo' },
+    { label: 'Open roles', value: String(dashboardData.overview.openRoles || 34), change: '+12 open', tone: 'green' },
+    { label: 'Monthly payroll', value: payrollDisplay, change: '+4.3%', tone: 'orange' },
+    { label: 'Attendance rate', value: `${dashboardData.overview.attendanceRate || 94.8}%`, change: '+1.6%', tone: 'blue' },
+  ];
+
   return (
     <div className="dashboard-layout">
       <aside className="dashboard-sidebar">
@@ -79,6 +121,10 @@ export default function AdminDashboard() {
           <strong>98.4% policy coverage</strong>
           <p>Policies and training modules are up to date across all departments.</p>
         </div>
+
+        <button type="button" className="logout-button" onClick={onLogout}>
+          Log out
+        </button>
       </aside>
 
       <main className="dashboard-main">
@@ -99,10 +145,10 @@ export default function AdminDashboard() {
             </button>
 
             <div className="profile-pill">
-              <div className="profile-avatar">AL</div>
+              <div className="profile-avatar">{initials}</div>
               <div>
-                <strong>Alex Lee</strong>
-                <span>Administrator</span>
+                <strong>{currentUser.name}</strong>
+                <span>{currentUser.roleLabel || currentUser.role || 'Administrator'}</span>
               </div>
             </div>
           </div>
@@ -125,6 +171,23 @@ export default function AdminDashboard() {
                 <ArrowUpRight size={16} />
                 <span>{stat.change}</span>
               </div>
+            </article>
+          ))}
+        </section>
+
+        <section className="module-grid" aria-label="HRMS management modules">
+          {(dashboardData.modules || fallbackData.modules).map((module) => (
+            <article key={module.title} className={`module-card ${module.tone}`}>
+              <div className="module-icon">
+                {module.title === 'Employees' && <Users size={18} />}
+                {module.title === 'Payroll' && <CircleDollarSign size={18} />}
+                {module.title === 'Attendance' && <Clock3 size={18} />}
+                {module.title === 'Reports' && <FileText size={18} />}
+                {module.title === 'Settings' && <ShieldCheck size={18} />}
+                {module.title === 'Performance' && <TrendingUp size={18} />}
+              </div>
+              <strong>{module.title}</strong>
+              <span>{module.detail}</span>
             </article>
           ))}
         </section>
@@ -169,12 +232,7 @@ export default function AdminDashboard() {
             </div>
 
             <ul className="check-list">
-              {[
-                'Safety training completions',
-                'Payroll verification review',
-                'Policy acknowledgment sent',
-                'Annual benefits enrollment',
-              ].map((item, index) => (
+              {['Safety training completions', 'Payroll verification review', 'Policy acknowledgment sent', 'Annual benefits enrollment'].map((item, index) => (
                 <li key={item} className={index < 3 ? 'done' : ''}>
                   <CheckCheck size={16} />
                   <span>{item}</span>
@@ -194,7 +252,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="member-list">
-              {teamMembers.map((member) => (
+              {(dashboardData.teamMembers || fallbackData.teamMembers).map((member) => (
                 <div className="member-item" key={member.name}>
                   <div className="member-avatar">{member.initial}</div>
                   <div className="member-copy">
@@ -215,7 +273,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="approval-list">
-              {approvals.map((item) => (
+              {(dashboardData.approvals || fallbackData.approvals).map((item) => (
                 <div className="approval-item" key={`${item.name}-${item.action}`}>
                   <div className="approval-copy">
                     <strong>{item.name}</strong>
@@ -239,7 +297,7 @@ export default function AdminDashboard() {
             </div>
 
             <div className="schedule-list">
-              {schedule.map((item) => (
+              {(dashboardData.schedule || fallbackData.schedule).map((item) => (
                 <div className="schedule-item" key={`${item.day}-${item.title}`}>
                   <div className="day-badge">{item.day}</div>
                   <div className="event-copy">

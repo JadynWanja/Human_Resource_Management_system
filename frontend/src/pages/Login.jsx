@@ -26,44 +26,82 @@ const featureCards = [
   },
 ];
 
-export default function Login({ onLoginSuccess }) {
+const roleOptions = [
+  { value: 'admin', label: 'Administrator' },
+  { value: 'hr', label: 'HR Manager' },
+  { value: 'manager', label: 'Department Manager' },
+  { value: 'employee', label: 'Employee' },
+  { value: 'finance', label: 'Finance Manager' },
+  { value: 'recruitment', label: 'Recruitment Lead' },
+  { value: 'operations', label: 'Operations Lead' },
+  { value: 'it', label: 'IT Support' },
+];
+
+export default function Login({ onAuthSuccess }) {
   const [mode, setMode] = useState('signin');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
+    fullName: 'Alex Lee',
+    email: 'alex.lee@harborone.com',
+    password: 'admin123',
+    companyRole: 'admin',
   });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((current) => ({
-      ...current,
-      [name]: value,
-    }));
+    setFormData((current) => ({ ...current, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    onLoginSuccess();
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const endpoint = mode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
+      const payload =
+        mode === 'signup'
+          ? {
+              name: formData.fullName,
+              email: formData.email,
+              password: formData.password,
+              companyRole: formData.companyRole,
+            }
+          : {
+              email: formData.email,
+              password: formData.password,
+            };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Authentication failed');
+      }
+
+      onAuthSuccess(data.user, data.token);
+    } catch (submitError) {
+      setError(submitError.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isSignUp = mode === 'signup';
 
   return (
     <main className="auth-page">
-      <video
-        className="auth-video"
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80"
-      >
-        <source
-          src="https://videos.pexels.com/video-files/3195394/3195394-hd_1920_1080.mp4"
-          type="video/mp4"
-        />
+      <video className="auth-video" autoPlay muted loop playsInline poster="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80">
+        <source src="https://videos.pexels.com/video-files/3195394/3195394-hd_1920_1080.mp4" type="video/mp4" />
       </video>
 
       <div className="auth-overlay" />
@@ -138,9 +176,7 @@ export default function Login({ onLoginSuccess }) {
               </div>
             </div>
 
-            <h2 id="auth-title">
-              {isSignUp ? 'Create your workspace' : 'Welcome back'}
-            </h2>
+            <h2 id="auth-title">{isSignUp ? 'Create your workspace' : 'Welcome back'}</h2>
             <p className="auth-subtitle">
               {isSignUp
                 ? 'Get started with a compliant and connected HR platform.'
@@ -174,7 +210,6 @@ export default function Login({ onLoginSuccess }) {
                     name="email"
                     type="email"
                     placeholder="name@company.com"
-                    autoComplete="email"
                     value={formData.email}
                     onChange={handleChange}
                     required
@@ -191,7 +226,6 @@ export default function Login({ onLoginSuccess }) {
                     name="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder={isSignUp ? 'Create a secure password' : 'Enter your password'}
-                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
                     value={formData.password}
                     onChange={handleChange}
                     required
@@ -209,14 +243,20 @@ export default function Login({ onLoginSuccess }) {
 
               {isSignUp && (
                 <div className="input-group">
-                  <label htmlFor="company">Company role</label>
+                  <label htmlFor="companyRole">Company role</label>
                   <div className="input-wrap select-wrap">
                     <BriefcaseBusiness size={18} aria-hidden="true" />
-                    <select id="company" defaultValue="admin">
-                      <option value="admin">Administrator</option>
-                      <option value="hr">HR Manager</option>
-                      <option value="manager">Department Manager</option>
-                      <option value="employee">Employee</option>
+                    <select
+                      id="companyRole"
+                      name="companyRole"
+                      value={formData.companyRole}
+                      onChange={handleChange}
+                    >
+                      {roleOptions.map((role) => (
+                        <option key={role.value} value={role.value}>
+                          {role.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -234,8 +274,10 @@ export default function Login({ onLoginSuccess }) {
                 </div>
               )}
 
-              <button type="submit" className="primary-button">
-                {isSignUp ? 'Create account' : 'Sign in'}
+              {error && <div className="auth-error">{error}</div>}
+
+              <button type="submit" className="primary-button" disabled={isSubmitting}>
+                {isSubmitting ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
                 <ArrowRight size={18} aria-hidden="true" />
               </button>
             </form>
