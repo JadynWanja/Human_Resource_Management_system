@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import RoleSwitcher from './components/RoleSwitcher';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
@@ -10,14 +11,21 @@ const TOKEN_KEY = 'hrmsToken';
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [role, setRole] = useState('admin');
-  const [user, setUser] = useState(null);
+  const [role, setRole] = useState('manager');
+  const [user, setUser] = useState({
+    name: 'Priya Shah',
+    email: 'priya.shah@harborone.com',
+    role: 'manager',
+    roleLabel: 'Department Manager',
+    department: 'Engineering'
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
 
     if (!token) {
+      setIsLoggedIn(true); // Default to logged in as Manager for seamless presentation
       setLoading(false);
       return;
     }
@@ -34,14 +42,11 @@ export default function App() {
 
         const data = await response.json();
         setUser(data.user);
-        setRole(data.user.role || 'admin');
+        setRole(data.user.role || 'manager');
         setIsLoggedIn(true);
       })
       .catch(() => {
-        localStorage.removeItem(TOKEN_KEY);
-        setUser(null);
-        setRole('admin');
-        setIsLoggedIn(false);
+        setIsLoggedIn(true);
       })
       .finally(() => {
         setLoading(false);
@@ -55,8 +60,8 @@ export default function App() {
 
     const normalizedUser = {
       ...userData,
-      role: userData.role || 'admin',
-      roleLabel: userData.roleLabel || 'Administrator',
+      role: userData.role || 'manager',
+      roleLabel: userData.roleLabel || 'Department Manager',
     };
 
     setUser(normalizedUser);
@@ -67,29 +72,49 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem(TOKEN_KEY);
     setUser(null);
-    setRole('admin');
     setIsLoggedIn(false);
+    setRole('login');
   };
 
   if (loading) {
     return <div className="app-loading">Loading your HRMS workspace...</div>;
   }
 
-  if (!isLoggedIn || !user) {
-    return <Login onAuthSuccess={handleAuthSuccess} />;
-  }
+  const renderContent = () => {
+    if (role === 'login' || (!isLoggedIn && role !== 'manager')) {
+      return <Login onAuthSuccess={handleAuthSuccess} />;
+    }
 
-  switch (role) {
-    case 'manager':
-      return <ManagerDashboard user={user} onLogout={handleLogout} />;
-    case 'employee':
-      return <EmployeeDashboard user={user} onLogout={handleLogout} />;
-    case 'hr':
-      return <HrPortal user={user} onLogout={handleLogout} />;
-    case 'mobile':
-      return <MobileEmployeeApp user={user} onLogout={handleLogout} />;
-    case 'admin':
-    default:
-      return <AdminDashboard user={user} onLogout={handleLogout} />;
-  }
+    switch (role) {
+      case 'admin':
+        return <AdminDashboard user={user} onLogout={handleLogout} />;
+      case 'manager':
+        return <ManagerDashboard user={user} onLogout={handleLogout} />;
+      case 'employee':
+        return <EmployeeDashboard user={user} onLogout={handleLogout} />;
+      case 'hr':
+        return <HrPortal user={user} onLogout={handleLogout} />;
+      case 'mobile':
+        return <MobileEmployeeApp user={user} onLogout={handleLogout} />;
+      default:
+        return <ManagerDashboard user={user} onLogout={handleLogout} />;
+    }
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6fb' }}>
+      {/* Louis's Role Switcher Bar */}
+      <RoleSwitcher activeRole={role} setActiveRole={(newRole) => {
+        setRole(newRole);
+        if (newRole === 'login') {
+          setIsLoggedIn(false);
+        } else {
+          setIsLoggedIn(true);
+        }
+      }} />
+
+      {/* Main View */}
+      {renderContent()}
+    </div>
+  );
 }

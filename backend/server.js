@@ -53,15 +53,42 @@ const users = [
   },
 ];
 
+let leaveRequests = [
+  { id: 1, employee: 'David Kim', type: 'Annual Leave', days: 5, stateText: 'Pending Approval', status: 'pending', date: '2026-08-24' },
+  { id: 2, employee: 'Sophia Martinez', type: 'Sick Leave', days: 1, stateText: 'Pending Approval', status: 'pending', date: '2026-08-25' },
+  { id: 3, employee: 'Marcus Chen', type: 'Remote Work', days: 3, stateText: 'Approved by Manager', status: 'approved', date: '2026-08-20' },
+  { id: 4, employee: 'Priya Sharma', type: 'Casual Leave', days: 2, stateText: 'Declined by HR', status: 'rejected', date: '2026-08-18' }
+];
+
 const dashboardStats = {
   overview: {
-    totalEmployees: 2480,
-    openRoles: 34,
-    payrollThisMonth: 482000,
-    attendanceRate: 94.8,
+    totalEmployees: 245,
+    departments: 12,
+    onLeave: 18,
+    presentToday: 227,
   },
+  metrics: [
+    { id: 1, label: 'Total Employees', value: '245', color: '#5e49e2' },
+    { id: 2, label: 'Departments', value: '12', color: '#5e49e2' },
+    { id: 3, label: 'On Leave', value: '18', color: '#f59e0b' },
+    { id: 4, label: 'Present Today', value: '227', color: '#10b981' }
+  ],
+  headcountOverview: [
+    { day: 'Mon', height: '45%' },
+    { day: 'Tue', height: '65%' },
+    { day: 'Wed', height: '85%' },
+    { day: 'Thu', height: '45%' },
+    { day: 'Fri', height: '65%' },
+    { day: 'Sat', height: '85%' },
+    { day: 'Sun', height: '45%' }
+  ],
+  leaveSummary: [
+    { type: 'Annual Leave', percentage: '50%', isActive: true },
+    { type: 'Sick Leave', percentage: '20%', isActive: false },
+    { type: 'Casual Leave', percentage: '20%', isActive: false }
+  ],
   modules: [
-    { title: 'Employees', detail: '2,480 active staff', tone: 'indigo' },
+    { title: 'Employees', detail: '245 active staff', tone: 'indigo' },
     { title: 'Payroll', detail: '$482K this month', tone: 'green' },
     { title: 'Attendance', detail: '94.8% on-time', tone: 'blue' },
     { title: 'Reports', detail: '28 generated this week', tone: 'orange' },
@@ -72,19 +99,7 @@ const dashboardStats = {
     { name: 'Anika Morris', team: 'Design', action: 'Leave request', status: 'Pending' },
     { name: 'Daniel Cruz', team: 'Operations', action: 'Expense claim', status: 'Approved' },
     { name: 'Priya Shah', team: 'Engineering', action: 'Recruitment', status: 'Review' },
-  ],
-  schedule: [
-    { day: 'Mon', title: 'Leadership sync', time: '9:00 AM' },
-    { day: 'Tue', title: 'Recruitment review', time: '11:30 AM' },
-    { day: 'Wed', title: 'Benefits brief', time: '2:00 PM' },
-    { day: 'Thu', title: 'Payroll audit', time: '4:15 PM' },
-  ],
-  teamMembers: [
-    { name: 'Milo Turner', role: 'Head of People', initial: 'MT' },
-    { name: 'Keisha Reed', role: 'HR Business Partner', initial: 'KR' },
-    { name: 'Lucas Moore', role: 'Finance Lead', initial: 'LM' },
-    { name: 'Noah Patel', role: 'Talent Specialist', initial: 'NP' },
-  ],
+  ]
 };
 
 const sanitizeUser = (user) => ({
@@ -169,7 +184,10 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 app.get('/api/dashboard', (req, res) => {
-  res.json(dashboardStats);
+  res.json({
+    ...dashboardStats,
+    leaveRequests
+  });
 });
 
 app.get('/api/profile', (req, res) => {
@@ -192,6 +210,31 @@ app.get('/api/profile', (req, res) => {
   } catch (error) {
     return res.status(401).json({ message: 'Token expired or invalid.' });
   }
+});
+
+// Roy's Manager Dashboard API endpoints
+app.get('/api/leave-requests', (req, res) => {
+  res.json({ leaveRequests });
+});
+
+app.post('/api/leave-requests/:id/approve', (req, res) => {
+  const reqId = parseInt(req.params.id);
+  const target = leaveRequests.find(r => r.id === reqId);
+  if (target) {
+    target.status = 'approved';
+    target.stateText = 'Approved by Manager';
+  }
+  res.json({ message: 'Leave request approved', leaveRequests });
+});
+
+app.post('/api/leave-requests/:id/reject', (req, res) => {
+  const reqId = parseInt(req.params.id);
+  const target = leaveRequests.find(r => r.id === reqId);
+  if (target) {
+    target.status = 'rejected';
+    target.stateText = 'Declined by Manager';
+  }
+  res.json({ message: 'Leave request rejected', leaveRequests });
 });
 
 app.listen(PORT, () => {
