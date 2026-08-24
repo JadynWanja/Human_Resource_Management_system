@@ -1,118 +1,294 @@
 import React, { useState } from 'react';
-import { Lock, Mail, ArrowRight, Shield } from 'lucide-react';
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  UserRound,
+} from 'lucide-react';
+import '../styles/hrms.css';
 
-export default function Login({ onLoginSuccess }) {
-  const [email, setEmail] = useState('manager@company.com');
-  const [password, setPassword] = useState('••••••••');
+const featureCards = [
+  {
+    title: 'People-first workflows',
+    text: 'Approve payroll, leave, onboarding and performance cycles from one place.',
+  },
+  {
+    title: 'Secure access',
+    text: 'Role-based permissions make every employee, manager and HR action traceable.',
+  },
+  {
+    title: 'Real-time insights',
+    text: 'Track metrics, engagement and hiring performance with live executive views.',
+  },
+];
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onLoginSuccess();
+const roleOptions = [
+  { value: 'admin', label: 'Administrator' },
+  { value: 'hr', label: 'HR Manager' },
+  { value: 'manager', label: 'Department Manager' },
+  { value: 'employee', label: 'Employee' },
+  { value: 'finance', label: 'Finance Manager' },
+  { value: 'recruitment', label: 'Recruitment Lead' },
+  { value: 'operations', label: 'Operations Lead' },
+  { value: 'it', label: 'IT Support' },
+];
+
+export default function Login({ onAuthSuccess }) {
+  const [mode, setMode] = useState('signin');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    fullName: 'Alex Lee',
+    email: 'alex.lee@harborone.com',
+    password: 'admin123',
+    companyRole: 'admin',
+  });
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
   };
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const endpoint = mode === 'signup' ? '/api/auth/signup' : '/api/auth/login';
+      const payload =
+        mode === 'signup'
+          ? {
+              name: formData.fullName,
+              email: formData.email,
+              password: formData.password,
+              companyRole: formData.companyRole,
+            }
+          : {
+              email: formData.email,
+              password: formData.password,
+            };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Authentication failed');
+      }
+
+      onAuthSuccess(data.user, data.token);
+    } catch (submitError) {
+      setError(submitError.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const isSignUp = mode === 'signup';
+
   return (
-    <div style={{
-      minHeight: 'calc(100vh - 46px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
-      padding: '2rem'
-    }}>
-      <div style={{
-        background: '#ffffff',
-        borderRadius: '16px',
-        padding: '2.5rem',
-        maxWidth: '420px',
-        width: '100%',
-        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '12px',
-            background: 'var(--primary-purple)',
-            color: '#fff',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '0.75rem'
-          }}>
-            <Lock size={24} />
-          </div>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e2029' }}>HRMS Portal Sign In</h2>
-          <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>Designed by Louis • Auth & Security</p>
-        </div>
+    <main className="auth-page">
+      <video className="auth-video" autoPlay muted loop playsInline poster="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1200&q=80">
+        <source src="https://videos.pexels.com/video-files/3195394/3195394-hd_1920_1080.mp4" type="video/mp4" />
+      </video>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-          <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '0.35rem' }}>
-              Work Email Address
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.7rem 1rem 0.7rem 2.4rem',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  outline: 'none',
-                  fontSize: '0.9rem'
-                }}
-              />
-              <Mail size={16} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+      <div className="auth-overlay" />
+
+      <div className="auth-shell">
+        <aside className="auth-visual" aria-label="HRMS overview">
+          <div className="auth-brand-row">
+            <div className="auth-mini-logo">HR</div>
+            <span>HarborOne HRMS</span>
+          </div>
+
+          <div className="visual-copy">
+            <p className="eyebrow">People operations platform</p>
+            <h1>Build a stronger workforce with smarter HR decisions.</h1>
+            <p className="visual-text">
+              Coordinate talent, payroll, attendance and engagement in one connected system built
+              for modern teams.
+            </p>
+          </div>
+
+          <div className="stat-pills" aria-label="HRMS highlights">
+            <div>
+              <strong>6,200+</strong>
+              <span>People managed</span>
+            </div>
+            <div>
+              <strong>96%</strong>
+              <span>Retention rate</span>
             </div>
           </div>
 
-          <div>
-            <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#475569', display: 'block', marginBottom: '0.35rem' }}>
-              Password
-            </label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.7rem 1rem 0.7rem 2.4rem',
-                  borderRadius: '8px',
-                  border: '1px solid #cbd5e1',
-                  outline: 'none',
-                  fontSize: '0.9rem'
-                }}
-              />
-              <Lock size={16} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-            </div>
+          <div className="feature-grid">
+            {featureCards.map((feature) => (
+              <article key={feature.title} className="feature-card">
+                <CheckCircle2 size={18} />
+                <div>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.text}</p>
+                </div>
+              </article>
+            ))}
           </div>
 
-          <button
-            type="submit"
-            style={{
-              background: 'var(--primary-purple)',
-              color: '#ffffff',
-              border: 'none',
-              padding: '0.85rem',
-              borderRadius: '8px',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.5rem',
-              marginTop: '0.5rem'
-            }}
-          >
-            <span>Sign In to HRMS</span>
-            <ArrowRight size={18} />
-          </button>
-        </form>
+          <div className="visual-image-card">
+            <img
+              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=900&q=80"
+              alt="HR professionals collaborating"
+            />
+          </div>
+        </aside>
+
+        <section className="auth-panel" aria-labelledby="auth-title">
+          <div className="auth-card">
+            <div className="auth-header">
+              <p className="eyebrow">Secure access</p>
+
+              <div className="auth-toggle" role="tablist" aria-label="Authentication mode selector">
+                <button
+                  type="button"
+                  className={mode === 'signin' ? 'active' : ''}
+                  onClick={() => setMode('signin')}
+                >
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  className={mode === 'signup' ? 'active' : ''}
+                  onClick={() => setMode('signup')}
+                >
+                  Sign up
+                </button>
+              </div>
+            </div>
+
+            <h2 id="auth-title">{isSignUp ? 'Create your workspace' : 'Welcome back'}</h2>
+            <p className="auth-subtitle">
+              {isSignUp
+                ? 'Get started with a compliant and connected HR platform.'
+                : 'Sign in to access your HRMS dashboard and daily operations.'}
+            </p>
+
+            <form className="auth-form" onSubmit={handleSubmit}>
+              {isSignUp && (
+                <div className="input-group">
+                  <label htmlFor="fullName">Full name</label>
+                  <div className="input-wrap">
+                    <UserRound size={18} aria-hidden="true" />
+                    <input
+                      id="fullName"
+                      name="fullName"
+                      type="text"
+                      placeholder="Jane Williams"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="input-group">
+                <label htmlFor="email">Work email</label>
+                <div className="input-wrap">
+                  <Mail size={18} aria-hidden="true" />
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="name@company.com"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label htmlFor="password">Password</label>
+                <div className="input-wrap">
+                  <LockKeyhole size={18} aria-hidden="true" />
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={isSignUp ? 'Create a secure password' : 'Enter your password'}
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="icon-button"
+                    onClick={() => setShowPassword((current) => !current)}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {isSignUp && (
+                <div className="input-group">
+                  <label htmlFor="companyRole">Company role</label>
+                  <div className="input-wrap select-wrap">
+                    <BriefcaseBusiness size={18} aria-hidden="true" />
+                    <select
+                      id="companyRole"
+                      name="companyRole"
+                      value={formData.companyRole}
+                      onChange={handleChange}
+                    >
+                      {roleOptions.map((role) => (
+                        <option key={role.value} value={role.value}>
+                          {role.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
+              {!isSignUp && (
+                <div className="form-meta">
+                  <label className="checkbox-row">
+                    <input type="checkbox" defaultChecked />
+                    <span>Remember me</span>
+                  </label>
+                  <button type="button" className="text-button">
+                    Forgot password?
+                  </button>
+                </div>
+              )}
+
+              {error && <div className="auth-error">{error}</div>}
+
+              <button type="submit" className="primary-button" disabled={isSubmitting}>
+                {isSubmitting ? 'Please wait...' : isSignUp ? 'Create account' : 'Sign in'}
+                <ArrowRight size={18} aria-hidden="true" />
+              </button>
+            </form>
+
+            <div className="service-note">
+              <CheckCircle2 size={16} />
+              <span>Trusted by global teams for compliant employee management.</span>
+            </div>
+          </div>
+        </section>
       </div>
-    </div>
+    </main>
   );
 }

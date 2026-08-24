@@ -1,44 +1,95 @@
-import React, { useState } from 'react';
-import RoleSwitcher from './components/RoleSwitcher';
+import React, { useEffect, useState } from 'react';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
-import ManagerDashboard from './pages/ManagerDashboard';
 import EmployeeDashboard from './pages/EmployeeDashboard';
-import MobileEmployeeApp from './pages/MobileEmployeeApp';
+import ManagerDashboard from './pages/ManagerDashboard';
 import HrPortal from './pages/HrPortal';
+import MobileEmployeeApp from './pages/MobileEmployeeApp';
+
+const TOKEN_KEY = 'hrmsToken';
 
 export default function App() {
-  // Default to Roy's Manager Dashboard or Louis's Login
-  const [activeRole, setActiveRole] = useState('manager');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [role, setRole] = useState('admin');
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const renderActiveView = () => {
-    switch (activeRole) {
-      case 'login':
-        return <Login onLoginSuccess={() => setActiveRole('manager')} />;
-      case 'admin':
-        return <AdminDashboard />;
-      case 'manager':
-        return <ManagerDashboard />;
-      case 'employee':
-        return <EmployeeDashboard />;
-      case 'mobile':
-        return <MobileEmployeeApp />;
-      case 'hr':
-        return <HrPortal />;
-      default:
-        return <ManagerDashboard />;
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (!token) {
+      setLoading(false);
+      return;
     }
+
+    fetch('/api/profile', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error('Unauthorized');
+        }
+
+        const data = await response.json();
+        setUser(data.user);
+        setRole(data.user.role || 'admin');
+        setIsLoggedIn(true);
+      })
+      .catch(() => {
+        localStorage.removeItem(TOKEN_KEY);
+        setUser(null);
+        setRole('admin');
+        setIsLoggedIn(false);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const handleAuthSuccess = (userData, token) => {
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    }
+
+    const normalizedUser = {
+      ...userData,
+      role: userData.role || 'admin',
+      roleLabel: userData.roleLabel || 'Administrator',
+    };
+
+    setUser(normalizedUser);
+    setRole(normalizedUser.role);
+    setIsLoggedIn(true);
   };
 
-  return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6fb', fontFamily: "'Inter', sans-serif" }}>
-      {/* Louis's Role Switcher Bar */}
-      <RoleSwitcher activeRole={activeRole} setActiveRole={setActiveRole} />
+  const handleLogout = () => {
+    localStorage.removeItem(TOKEN_KEY);
+    setUser(null);
+    setRole('admin');
+    setIsLoggedIn(false);
+  };
 
-      {/* Main View Area */}
-      <main style={{ minHeight: 'calc(100vh - 46px)' }}>
-        {renderActiveView()}
-      </main>
-    </div>
-  );
+  if (loading) {
+    return <div className="app-loading">Loading your HRMS workspace...</div>;
+  }
+
+  if (!isLoggedIn || !user) {
+    return <Login onAuthSuccess={handleAuthSuccess} />;
+  }
+
+  switch (role) {
+    case 'manager':
+      return <ManagerDashboard user={user} onLogout={handleLogout} />;
+    case 'employee':
+      return <EmployeeDashboard user={user} onLogout={handleLogout} />;
+    case 'hr':
+      return <HrPortal user={user} onLogout={handleLogout} />;
+    case 'mobile':
+      return <MobileEmployeeApp user={user} onLogout={handleLogout} />;
+    case 'admin':
+    default:
+      return <AdminDashboard user={user} onLogout={handleLogout} />;
+  }
 }
