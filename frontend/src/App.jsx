@@ -1,113 +1,106 @@
 import React, { useState } from 'react';
-import Sidebar from './components/Sidebar';
-import {
-  METRIC_CARDS_DATA,
-  HEADCOUNT_BARS,
-  LEAVE_SUMMARY_DATA,
-  PENDING_LEAVE_REQUESTS
-} from './data/mockData';
+import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
+import EmployeeDashboard from './pages/EmployeeDashboard';
+import MobileEmployeeApp from './pages/MobileEmployeeApp';
+import HrPortal from './pages/HrPortal';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
+  // Available views: 'login', 'admin', 'manager', 'employee', 'mobile', 'hr'
+  const [currentView, setCurrentView] = useState('manager');
+
+  const navItems = [
+    { id: 'login', label: '🔑 Login (Louis)', author: 'Louis' },
+    { id: 'admin', label: '🛡️ Admin Portal (Louis)', author: 'Louis' },
+    { id: 'manager', label: '📊 Manager Dashboard (Roy)', author: 'Roy' },
+    { id: 'employee', label: '🧑‍💼 Employee Dashboard (Joseph)', author: 'Joseph' },
+    { id: 'mobile', label: '📱 Mobile Employee App (Joseph)', author: 'Joseph' },
+    { id: 'hr', label: '👥 HR Involvement Portal (Jadyn & Frank)', author: 'Jadyn & Frank' },
+  ];
+
+  const renderCurrentView = () => {
+    switch (currentView) {
+      case 'login':
+        return <Login onLoginSuccess={() => setCurrentView('manager')} />;
+      case 'admin':
+        return <AdminDashboard />;
+      case 'manager':
+        return <ManagerDashboard />;
+      case 'employee':
+        return <EmployeeDashboard />;
+      case 'mobile':
+        return <MobileEmployeeApp />;
+      case 'hr':
+        return <HrPortal />;
+      default:
+        return <ManagerDashboard />;
+    }
+  };
 
   return (
-    <div className="app-layout">
-      {/* Sidebar Navigation */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-      {/* Main Content */}
-      <main className="main-wrapper">
-        <header className="dashboard-header">
-          <div>
-            <h2>03 — Manager Dashboard</h2>
-            <p>Here is your organization overview for today.</p>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f4f6fb', fontFamily: "'Inter', sans-serif" }}>
+      {/* Top Role Switcher Header for Unified Group Presentation */}
+      <header style={{
+        backgroundColor: '#0f172a',
+        color: '#ffffff',
+        padding: '0.65rem 1.5rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderBottom: '2px solid #5e49e2',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{
+            background: '#5e49e2',
+            color: '#ffffff',
+            fontWeight: 900,
+            fontSize: '0.9rem',
+            padding: '0.35rem 0.65rem',
+            borderRadius: '6px',
+            letterSpacing: '0.05em'
+          }}>
+            HRMS GROUP
           </div>
-          <div>
-            <input
-              type="text"
-              className="search-input-box"
-              placeholder="Search anything..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </header>
+          <span style={{ fontSize: '0.9rem', fontWeight: 600, color: '#94a3b8' }}>
+            Integrated Team Portal (5 Members)
+          </span>
+        </div>
 
-        {/* 4 Summary Metric Cards */}
-        <section className="metrics-grid">
-          {METRIC_CARDS_DATA.map((card) => (
-            <div key={card.id} className="metric-card">
-              <div>
-                <div className="label">{card.label}</div>
-                <div className="value">{card.value}</div>
-              </div>
-              <div
-                className="metric-icon-sq"
-                style={{ backgroundColor: card.color }}
-              />
-            </div>
-          ))}
-        </section>
+        {/* Navigation buttons to switch view */}
+        <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+          {navItems.map((item) => {
+            const isActive = currentView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setCurrentView(item.id)}
+                style={{
+                  backgroundColor: isActive ? '#5e49e2' : 'transparent',
+                  color: isActive ? '#ffffff' : '#cbd5e1',
+                  border: isActive ? '1px solid #5e49e2' : '1px solid #334155',
+                  borderRadius: '6px',
+                  padding: '0.35rem 0.75rem',
+                  fontSize: '0.8rem',
+                  fontWeight: isActive ? 700 : 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </div>
+      </header>
 
-        {/* Middle Charts Grid */}
-        <section className="middle-grid">
-          <div className="card-panel">
-            <div className="card-title">Headcount Overview</div>
-            <div className="chart-days">
-              {HEADCOUNT_BARS.map((b) => (
-                <span key={b.day} style={{ width: '22px', textAlign: 'center' }}>
-                  {b.day}
-                </span>
-              ))}
-            </div>
-            <div className="bars-container">
-              {HEADCOUNT_BARS.map((b) => (
-                <div
-                  key={b.day}
-                  className="bar-col"
-                  style={{ height: b.height }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="card-panel">
-            <div className="card-title">Leave Summary</div>
-            <div className="leave-summary-list">
-              {LEAVE_SUMMARY_DATA.map((ls, idx) => (
-                <div
-                  key={idx}
-                  className={`leave-summary-item ${ls.isActive ? 'active' : ''}`}
-                >
-                  <span className="name">{ls.type}</span>
-                  <span className="percentage">{ls.percentage}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pending Requests Table */}
-        <section className="card-panel">
-          <div className="card-title">Pending Leave Requests</div>
-          <div className="requests-list">
-            {PENDING_LEAVE_REQUESTS.filter(r =>
-              searchQuery === '' ||
-              r.employee.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              r.type.toLowerCase().includes(searchQuery.toLowerCase())
-            ).map((req) => (
-              <div key={req.id} className="request-row">
-                <div style={{ fontWeight: 500 }}>
-                  {req.employee} — {req.type} — {req.stateText}
-                </div>
-                <div className={`status-${req.status}`}>
-                  {req.stateText}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* Render Active View */}
+      <main style={{ minHeight: 'calc(100vh - 46px)' }}>
+        {renderCurrentView()}
       </main>
     </div>
   );
